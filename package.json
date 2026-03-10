@@ -2,12 +2,12 @@
   "name": "markdown-documentation-explorer",
   "displayName": "Markdown Documentation Explorer",
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "icon": "resources/icon.png",
   "publisher": "nagarjunch",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nagarjunch/markdown-explorer"
+    "url": "https://github.com/nagarjunch/markdown-documentation-explorer-vs-ext"
   },
   "license": "GPL-3.0",
   "engines": {

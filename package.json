@@ -1,5 +1,5 @@
 {
-  "name": "markdown-explorer",
+  "name": "markdown-documentation-explorer",
   "displayName": "Markdown Documentation Explorer",
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
   "version": "0.0.1",

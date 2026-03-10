@@ -26,11 +26,11 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
     }
 
     private async buildTree() {
-        this.tree = [];
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return;
 
         const mkdocsFiles = await vscode.workspace.findFiles('**/mkdocs.yml', '**/node_modules/**');
+        const newTree: MkDocsNode[] = [];
 
         for (const file of mkdocsFiles) {
             try {
@@ -47,7 +47,7 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
                         type: 'folder',
                         children: this.parseNav(data.nav, docsDir)
                     };
-                    this.tree.push(siteNode);
+                    newTree.push(siteNode);
                 }
             } catch (e) {
                 console.error(`Failed to parse ${file.fsPath}`, e);
@@ -55,8 +55,10 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
         }
 
         // If there's only one site, just show its children directly rather than nesting it
-        if (this.tree.length === 1 && this.tree[0].children) {
-            this.tree = this.tree[0].children;
+        if (newTree.length === 1 && newTree[0].children) {
+            this.tree = newTree[0].children;
+        } else {
+            this.tree = newTree;
         }
 
         this._onDidChangeTreeData.fire();

@@ -2,7 +2,7 @@
   "name": "markdown-documentation-explorer",
   "displayName": "Markdown Documentation Explorer",
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "resources/icon.png",
   "publisher": "nagarjunch",
   "repository": {
@@ -15,7 +15,8 @@
   },
   "categories": [
     "Other",
-    "Snippets"
+    "Snippets",
+    "Notebooks"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -53,6 +54,11 @@
         "command": "markdownExplorer.search",
         "title": "Markdown Explorer: Search globally",
         "icon": "$(search)"
+      },
+      {
+        "command": "markdownExplorer.refresh",
+        "title": "Refresh Explorer",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -60,6 +66,11 @@
         {
           "command": "markdownExplorer.search",
           "when": "view == markdownExplorerView",
+          "group": "navigation"
+        },
+        {
+          "command": "markdownExplorer.refresh",
+          "when": "view == markdownExplorerView || view == markdownMkdocsView",
           "group": "navigation"
         }
       ],

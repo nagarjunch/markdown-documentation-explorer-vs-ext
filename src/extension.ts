@@ -43,6 +43,17 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Command: Refresh
+    context.subscriptions.push(
+        vscode.commands.registerCommand('markdownExplorer.refresh', async () => {
+            await workspaceIndexer.initialize();
+            workspaceTreeProvider.refresh();
+            mkdocsTreeProvider.refresh();
+            await searchEngine.reindex(workspaceIndexer.getAllDocuments());
+            vscode.window.showInformationMessage('Markdown Explorer: Refreshed!');
+        })
+    );
+
     // Refresh tree views on file changes
     workspaceIndexer.onDidChange(() => {
         workspaceTreeProvider.refresh();

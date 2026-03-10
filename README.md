@@ -2,6 +2,8 @@
 
 Markdown Documentation Explorer is a powerful VS Code extension that automatically discovers, organizes, renders, and searches all markdown documentation in a repository. It provides a centralized documentation experience inside VS Code, enabling developers to explore and navigate documentation similar to a dedicated documentation website (like MkDocs or Docusaurus) without ever leaving the IDE.
 
+![Markdown Documentation Explorer Screenshot](./assets/screenshot.png)
+
 ---
 
 ## 🌟 Features

@@ -10,9 +10,56 @@ This design covers the Phase 1 goals outlined in the PRD, including workspace di
 
 ---
 
-## 2. Architecture Overview
-
 At a high level, the extension relies on VSCode's Extensibility API combined with local indexing and a Webview-based render engine.
+
+```mermaid
+graph TD
+    subgraph "VSCode UI Layer"
+        ActivityBar["Activity Bar Icon"]
+        Sidebar["Explorer Sidebar"]
+        QuickPick["Search QuickPick"]
+        WebView["Markdown Preview Panel"]
+    end
+
+    subgraph "Extension Core"
+        Activator["Entry Point (extension.ts)"]
+        Indexer["Workspace Indexer"]
+        Search["Search Engine (FlexSearch)"]
+    end
+
+    subgraph "View Providers"
+        WTP["WorkspaceTreeProvider"]
+        MTP["MkDocsTreeProvider"]
+    end
+
+    subgraph "Data Storage"
+        MD["Markdown Files (.md)"]
+        YML["mkdocs.yml"]
+    end
+
+    ActivityBar --> Activator
+    Activator --> Indexer
+    Activator --> Search
+    Activator --> WTP
+    Activator --> MTP
+    
+    Indexer --> MD
+    Indexer --> YML
+    Indexer -- "Notifies" --> WTP
+    Indexer -- "Notifies" --> MTP
+    
+    WTP --> Sidebar
+    MTP --> Sidebar
+    
+    Search -- "Reads" --> Indexer
+    QuickPick -- "Triggers" --> Search
+    
+    Sidebar -- "Open Preview" --> WebView
+    QuickPick -- "Open Preview" --> WebView
+    
+    WebView -- "Renders" --> MD
+    WebView -- "Plugins" --> MermaidJS["Mermaid.js / TaskLists"]
+```
 
 ### 2.1 Core Components
 

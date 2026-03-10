@@ -1,0 +1,121 @@
+{
+  "name": "markdown-explorer",
+  "displayName": "Markdown Documentation Explorer",
+  "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
+  "version": "0.0.1",
+  "icon": "resources/icon.png",
+  "publisher": "test-publisher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/test-publisher/markdown-explorer"
+  },
+  "license": "GPL-3.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "markdown-explorer-sidebar",
+          "title": "MD Explorer",
+          "icon": "resources/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "markdown-explorer-sidebar": [
+        {
+          "id": "markdownExplorerView",
+          "name": "Workspace Explorer"
+        },
+        {
+          "id": "markdownMkdocsView",
+          "name": "MkDocs Explorer"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "markdownExplorer.openPreview",
+        "title": "Open Markdown Preview",
+        "icon": "$(markdown)"
+      },
+      {
+        "command": "markdownExplorer.search",
+        "title": "Markdown Explorer: Search globally",
+        "icon": "$(search)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "markdownExplorer.search",
+          "when": "view == markdownExplorerView",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "markdownExplorer.search",
+          "when": "activeWebviewPanelId == markdownExplorerPreview",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Markdown Explorer",
+      "properties": {
+        "markdownExplorer.includeHiddenFolders": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include hidden folders like .github, .ai in the tree."
+        },
+        "markdownExplorer.enableMermaid": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Mermaid.js rendering in the markdown preview."
+        },
+        "markdownExplorer.enableMkDocs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Parse and show the MkDocs Explorer if mkdocs.yml is found."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "compile": "tsc -noEmit && npm run esbuild-base",
+    "watch": "npm run esbuild-base -- --sourcemap --watch",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --format=cjs --platform=node --external:vscode",
+    "build": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.18.11",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "flexsearch": "^0.7.31",
+    "js-yaml": "^4.1.0",
+    "markdown-it": "^14.0.0",
+    "markdown-it-admonition": "^1.0.1",
+    "markdown-it-footnote": "^3.0.3",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^10.9.0"
+  }
+}

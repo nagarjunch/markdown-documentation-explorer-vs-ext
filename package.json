@@ -4,10 +4,10 @@
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
   "version": "0.0.1",
   "icon": "resources/icon.png",
-  "publisher": "test-publisher",
+  "publisher": "nagarjunch",
   "repository": {
     "type": "git",
-    "url": "https://github.com/test-publisher/markdown-explorer"
+    "url": "https://github.com/nagarjunch/markdown-explorer"
   },
   "license": "GPL-3.0",
   "engines": {

@@ -26,3 +26,95 @@
     box-sizing: content-box;
     background-color: var(--vscode-editor-background);
 }
+
+/* Tables */
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 16px;
+    border: 1px solid var(--vscode-editorWidget-border);
+}
+
+.markdown-body table th,
+.markdown-body table td {
+    padding: 6px 13px;
+    border: 1px solid var(--vscode-editorWidget-border);
+}
+
+.markdown-body table tr {
+    background-color: var(--vscode-editor-background);
+}
+
+.markdown-body table tr:nth-child(2n) {
+    background-color: var(--vscode-editorWidget-background);
+}
+
+/* Blockquotes */
+.markdown-body blockquote {
+    padding: 0 1em;
+    color: var(--vscode-descriptionForeground);
+    border-left: 0.25em solid var(--vscode-textBlockQuote-border);
+    margin: 0 0 16px 0;
+}
+
+/* Admonitions */
+.markdown-body .admonition {
+    padding: 15px;
+    margin-bottom: 21px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    page-break-inside: avoid;
+    border-left: 0.2rem solid var(--vscode-textBlockQuote-border);
+    background-color: var(--vscode-editorWidget-background);
+    border-radius: 2px;
+}
+
+.markdown-body .admonition-title {
+    margin: -15px -15px 15px -15px;
+    padding: 10px 15px;
+    background-color: rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    font-weight: bold;
+}
+
+.markdown-body .admonition > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Details/Summary */
+.markdown-body details {
+    padding: 10px;
+    background-color: var(--vscode-editorWidget-background);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+.markdown-body summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Line Breaks */
+.markdown-body hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: var(--vscode-editorWidget-border);
+    border: 0;
+}
+
+/* Task Lists */
+.markdown-body ul.contains-task-list {
+    list-style-type: none;
+    padding-left: 30px;
+}
+
+.markdown-body ul.contains-task-list .task-list-item {
+    position: relative;
+    list-style-type: none;
+}
+
+.markdown-body .task-list-item-checkbox {
+    margin-right: 0.5em;
+    vertical-align: middle;
+}

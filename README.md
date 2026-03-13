@@ -10,14 +10,23 @@ Markdown Documentation Explorer is a powerful VS Code extension that automatical
 
 - **Workspace Markdown Discovery**: Automatically indexes markdown files across your entire project, including hidden folders and AI-generated docs (`.ai`, `.cursor`, etc.).
 - **Dual Sidebar Explorer**: 
-  - **Workspace Explorer:** Navigate standard folders and files natively found in your workspace workspace.
+  - **Workspace Explorer:** Navigate standard folders and files natively found in your workspace.
   - **MkDocs Explorer:** Automatically detects any `mkdocs.yml` configurations in your workspace and renders a custom hierarchical navigation tree mapping directly to your docs outline.
 - **Rich Markdown Preview Engine**: Powered by `markdown-it` with robust plugins:
   - Supports GitHub Flavored Markdown (GFM).
   - Task Lists, Admonitions, and Footnotes out of the box.
+  - Native VS Code themes and fonts applied via `vscode-webview` variables.
   - Auto-translated local image routing (bypassing strict webview security policies).
   - Native Mermaid diagram rendering (`mermaid.js`).
   - Seamless internal cross-file link navigation.
+  - **Syntax Highlighting** via `highlight.js` seamlessly adjusting to Light/Dark themes.
+- **Multiple Previews & Context Menus**: 
+  - Open multiple Markdown files simultaneously in side-by-side preview tabs.
+  - Right-click `.md` files in the Explorer to instantly `Open Markdown Preview`.
+  - Context menu action `Edit Markdown` inside the preview tab to quickly return to your source code.
+- **Export to PDF**: 
+  - One-click `Export as PDF` action available via context menus (in the explorer, editor title, or preview webview).
+  - Generates beautifully styled standalone PDF documents supporting images, expanding details/summary blocks, and rendering mermaid charts.
 - **Global Documentation Search**: Lightning-fast full-text documentation search using `FlexSearch` with prefix-matching support.
 - **In-Document Highlight & Scroll**: 
   - Clicking a result in the global search automatically scrolls to the exact match in the preview and highlights it.

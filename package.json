@@ -2,7 +2,7 @@
   "name": "markdown-documentation-explorer",
   "displayName": "Markdown Documentation Explorer",
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "icon": "resources/icon.png",
   "publisher": "nagarjunch",
   "repository": {
@@ -59,6 +59,23 @@
         "command": "markdownExplorer.refresh",
         "title": "Refresh Explorer",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "markdownExplorer.editMarkdown",
+        "title": "Edit Markdown",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "markdownExplorer.exportPdf",
+        "title": "Export as PDF",
+        "icon": "$(file-pdf)"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "markdownExplorer.exportSubmenu",
+        "label": "Export",
+        "icon": "$(export)"
       }
     ],
     "menus": {
@@ -79,6 +96,64 @@
           "command": "markdownExplorer.search",
           "when": "activeWebviewPanelId == markdownExplorerPreview",
           "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "markdownExplorer.openPreview",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        },
+        {
+          "submenu": "markdownExplorer.exportSubmenu",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "markdownExplorer.openPreview",
+          "when": "resourceExtname == .md && !isInDiffEditor",
+          "group": "navigation"
+        },
+        {
+          "submenu": "markdownExplorer.exportSubmenu",
+          "when": "resourceExtname == .md && !isInDiffEditor",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "markdownExplorer.openPreview",
+          "when": "resourceExtname == .md && activeWebviewPanelId != markdownExplorerPreview",
+          "group": "navigation"
+        },
+        {
+          "command": "markdownExplorer.editMarkdown",
+          "when": "activeWebviewPanelId == markdownExplorerPreview",
+          "group": "navigation"
+        },
+        {
+          "submenu": "markdownExplorer.exportSubmenu",
+          "when": "resourceExtname == .md || activeWebviewPanelId == markdownExplorerPreview",
+          "group": "navigation"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "markdownExplorer.editMarkdown",
+          "when": "webviewId == markdownExplorerPreview",
+          "group": "navigation"
+        },
+        {
+          "submenu": "markdownExplorer.exportSubmenu",
+          "when": "webviewId == markdownExplorerPreview",
+          "group": "navigation"
+        }
+      ],
+      "markdownExplorer.exportSubmenu": [
+        {
+          "command": "markdownExplorer.exportPdf"
         }
       ]
     },
@@ -112,6 +187,7 @@
     "build": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node"
   },
   "devDependencies": {
+    "@types/highlight.js": "^9.12.4",
     "@types/js-yaml": "^4.0.9",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^18.x",
@@ -122,11 +198,13 @@
   "dependencies": {
     "chokidar": "^3.6.0",
     "flexsearch": "^0.7.31",
+    "highlight.js": "^11.11.1",
     "js-yaml": "^4.1.0",
     "markdown-it": "^14.0.0",
     "markdown-it-admonition": "^1.0.1",
     "markdown-it-footnote": "^3.0.3",
     "markdown-it-task-lists": "^2.1.1",
-    "mermaid": "^10.9.0"
+    "mermaid": "^10.9.0",
+    "puppeteer-core": "^24.39.1"
   }
 }

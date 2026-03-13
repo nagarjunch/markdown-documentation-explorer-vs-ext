@@ -5,29 +5,44 @@ import MarkdownIt from 'markdown-it';
 import markdownItTaskLists from 'markdown-it-task-lists';
 import markdownItAdmonition from 'markdown-it-admonition';
 import markdownItFootnote from 'markdown-it-footnote';
+import hljs from 'highlight.js';
 
 export class MarkdownPreviewPanel {
-    public static currentPanel: MarkdownPreviewPanel | undefined;
+    private static _panels: Map<string, MarkdownPreviewPanel> = new Map();
+    private static _activePanel: MarkdownPreviewPanel | undefined;
+
+    /** Keep backward-compat: returns the last-focused panel */
+    public static get currentPanel(): MarkdownPreviewPanel | undefined {
+        return MarkdownPreviewPanel._activePanel;
+    }
+
     private readonly _panel: vscode.WebviewPanel;
     private readonly _extensionUri: vscode.Uri;
     private _disposables: vscode.Disposable[] = [];
     private _currentDocumentUri: vscode.Uri;
     private _mdRenderer: MarkdownIt;
 
+    public get documentUri(): vscode.Uri {
+        return this._currentDocumentUri;
+    }
+
     public static createOrShow(extensionUri: vscode.Uri, documentUri: vscode.Uri, query?: string) {
+        const key = documentUri.fsPath;
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
             : undefined;
 
-        if (MarkdownPreviewPanel.currentPanel) {
-            MarkdownPreviewPanel.currentPanel._panel.reveal(column);
-            MarkdownPreviewPanel.currentPanel.update(documentUri, query);
+        // If a panel already exists for this file, reveal it
+        const existing = MarkdownPreviewPanel._panels.get(key);
+        if (existing) {
+            existing._panel.reveal(column);
+            existing.update(documentUri, query);
             return;
         }
 
         const panel = vscode.window.createWebviewPanel(
             'markdownExplorerPreview',
-            'Markdown Preview',
+            path.basename(documentUri.fsPath),
             column || vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -38,7 +53,9 @@ export class MarkdownPreviewPanel {
             }
         );
 
-        MarkdownPreviewPanel.currentPanel = new MarkdownPreviewPanel(panel, extensionUri, documentUri, query);
+        const instance = new MarkdownPreviewPanel(panel, extensionUri, documentUri, query);
+        MarkdownPreviewPanel._panels.set(key, instance);
+        MarkdownPreviewPanel._activePanel = instance;
     }
 
     private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, documentUri: vscode.Uri, query?: string) {
@@ -47,7 +64,20 @@ export class MarkdownPreviewPanel {
         this._currentDocumentUri = documentUri;
 
         // Initialize markdown-it with plugins
-        this._mdRenderer = new MarkdownIt({ html: true, linkify: true })
+        let mdOptions: MarkdownIt.Options = {
+            html: true,
+            linkify: true,
+            highlight: function (str, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value;
+                    } catch (__) { }
+                }
+                return ''; // use external default escaping
+            }
+        };
+
+        this._mdRenderer = new MarkdownIt(mdOptions)
             .use(markdownItTaskLists)
             .use(markdownItAdmonition)
             .use(markdownItFootnote);
@@ -88,6 +118,13 @@ export class MarkdownPreviewPanel {
 
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
+        // Track which panel is active
+        this._panel.onDidChangeViewState(() => {
+            if (this._panel.active) {
+                MarkdownPreviewPanel._activePanel = this;
+            }
+        }, null, this._disposables);
+
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(
             message => {
@@ -95,7 +132,7 @@ export class MarkdownPreviewPanel {
                     case 'openLink':
                         const targetUri = vscode.Uri.file(path.resolve(path.dirname(this._currentDocumentUri.fsPath), message.href));
                         if (fs.existsSync(targetUri.fsPath)) {
-                            MarkdownPreviewPanel.currentPanel?.update(targetUri);
+                            MarkdownPreviewPanel.createOrShow(this._extensionUri, targetUri);
                         } else {
                             vscode.window.showErrorMessage(`File not found: ${message.href}`);
                         }
@@ -133,8 +170,10 @@ export class MarkdownPreviewPanel {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Markdown Preview</title>
+                <link id="hljs-style" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+                <link rel="stylesheet" href="${styleUri}">
                 <style>
-                    body { font-family: var(--vscode-editor-font-family); color: var(--vscode-editor-foreground); padding: 20px; }
+                    body { font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif); color: var(--vscode-editor-foreground); padding: 20px; }
                     img { max-width: 100%; height: auto; }
                     pre { background-color: var(--vscode-textCodeBlock-background); padding: 10px; overflow-x: auto; }
                     code { font-family: var(--vscode-editor-font-family); }
@@ -206,6 +245,19 @@ export class MarkdownPreviewPanel {
                 <script>
                     const vscode = acquireVsCodeApi();
                     
+                    // Theme adjustments
+                    const isLight = document.body.classList.contains('vscode-light');
+                    document.getElementById('hljs-style').href = isLight ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css' : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css';
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.attributeName === 'class') {
+                                const isLight = document.body.classList.contains('vscode-light');
+                                document.getElementById('hljs-style').href = isLight ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css' : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css';
+                            }
+                        });
+                    });
+                    observer.observe(document.body, { attributes: true });
+
                     const searchBar = document.getElementById('custom-search-bar');
                     const searchInput = document.getElementById('search-input');
                     const searchNext = document.getElementById('search-next');
@@ -285,7 +337,11 @@ export class MarkdownPreviewPanel {
     }
 
     public dispose() {
-        MarkdownPreviewPanel.currentPanel = undefined;
+        // Remove from the panels map
+        MarkdownPreviewPanel._panels.delete(this._currentDocumentUri.fsPath);
+        if (MarkdownPreviewPanel._activePanel === this) {
+            MarkdownPreviewPanel._activePanel = undefined;
+        }
         this._panel.dispose();
         while (this._disposables.length) {
             const x = this._disposables.pop();

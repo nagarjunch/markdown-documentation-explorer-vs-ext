@@ -1,5 +1,14 @@
 # Markdown Test Sheet
 
+## Table of Contents
+- [Tables](#tables)
+- [Blockquotes](#blockquotes)
+- [Admonitions](#admonitions)
+- [Task Lists](#task-lists)
+- [Code & Pre](#code--pre)
+- [Details / Summary](#details--summary)
+- [Horizontal Rule](#horizontal-rule)
+
 ## Tables
 | Feature | Supported | Notes |
 | :--- | :---: | ---: |

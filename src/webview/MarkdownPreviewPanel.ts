@@ -5,6 +5,7 @@ import MarkdownIt from 'markdown-it';
 import markdownItTaskLists from 'markdown-it-task-lists';
 import markdownItAdmonition from 'markdown-it-admonition';
 import markdownItFootnote from 'markdown-it-footnote';
+import markdownItAnchor from 'markdown-it-anchor';
 import hljs from 'highlight.js';
 
 export class MarkdownPreviewPanel {
@@ -80,7 +81,10 @@ export class MarkdownPreviewPanel {
         this._mdRenderer = new MarkdownIt(mdOptions)
             .use(markdownItTaskLists)
             .use(markdownItAdmonition)
-            .use(markdownItFootnote);
+            .use(markdownItFootnote)
+            .use(markdownItAnchor, {
+                tabIndex: false
+            });
 
         // Custom fence rendering for mermaid
         const defaultFenceRender = this._mdRenderer.renderer.rules.fence || function (tokens, idx, options, env, self) {
@@ -144,18 +148,29 @@ export class MarkdownPreviewPanel {
         );
     }
 
-    public update(documentUri: vscode.Uri, query?: string) {
-        this._currentDocumentUri = documentUri;
-        this._panel.title = path.basename(documentUri.fsPath);
-        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview, query);
+    public static updateMatchingPanel(document: vscode.TextDocument) {
+        const key = document.uri.fsPath;
+        const existing = MarkdownPreviewPanel._panels.get(key);
+        if (existing) {
+            // Update the preview without reading from disk, using the live text from the editor
+            existing.update(document.uri, undefined, document.getText());
+        }
     }
 
-    private _getHtmlForWebview(webview: vscode.Webview, query?: string) {
-        let content = '';
-        try {
-            content = fs.readFileSync(this._currentDocumentUri.fsPath, 'utf8');
-        } catch (e) {
-            content = `# Error\nCould not read file: ${this._currentDocumentUri.fsPath}`;
+    public update(documentUri: vscode.Uri, query?: string, contentOverride?: string) {
+        this._currentDocumentUri = documentUri;
+        this._panel.title = path.basename(documentUri.fsPath);
+        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview, query, contentOverride);
+    }
+
+    private _getHtmlForWebview(webview: vscode.Webview, query?: string, contentOverride?: string) {
+        let content = contentOverride;
+        if (content === undefined) {
+            try {
+                content = fs.readFileSync(this._currentDocumentUri.fsPath, 'utf8');
+            } catch (e) {
+                content = `# Error\nCould not read file: ${this._currentDocumentUri.fsPath}`;
+            }
         }
 
         const htmlContent = this._mdRenderer.render(content);
@@ -232,7 +247,7 @@ export class MarkdownPreviewPanel {
                     mermaid.initialize({ startOnLoad: true, theme: 'dark' });
                 </script>` : ''}
             </head>
-            <body>
+            <body data-vscode-context='{"webviewSection": "markdownExplorerPreview", "preventDefaultContextMenuItems": true}'>
                 <div id="custom-search-bar">
                     <input id="search-input" type="text" placeholder="Find in document..." />
                     <button id="search-prev" title="Previous Match"><span class="search-icon">↑</span></button>

@@ -112,6 +112,13 @@ export async function activate(context: vscode.ExtensionContext) {
         mkdocsTreeProvider.refresh();
         searchEngine.reindex(workspaceIndexer.getAllDocuments());
     });
+
+    // Handle live preview updates
+    vscode.workspace.onDidChangeTextDocument(event => {
+        if (event.document.languageId === 'markdown') {
+            MarkdownPreviewPanel.updateMatchingPanel(event.document);
+        }
+    });
 }
 
 export function deactivate() { }

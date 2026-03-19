@@ -6,6 +6,7 @@ import MarkdownIt from 'markdown-it';
 import markdownItTaskLists from 'markdown-it-task-lists';
 import markdownItAdmonition from 'markdown-it-admonition';
 import markdownItFootnote from 'markdown-it-footnote';
+import markdownItAnchor from 'markdown-it-anchor';
 import hljs from 'highlight.js';
 import puppeteer from 'puppeteer-core';
 
@@ -78,7 +79,33 @@ function buildHtmlForPdf(markdownContent: string, title: string, baseDirPath: st
     })
         .use(markdownItTaskLists)
         .use(markdownItAdmonition)
-        .use(markdownItFootnote);
+        .use(markdownItFootnote)
+        .use(markdownItAnchor, {
+            tabIndex: false
+        });
+
+    // Custom link handling: force external hyperlinks to open in new tab
+    const defaultLinkRender = md.renderer.rules.link_open || function (tokens: any, idx: any, options: any, env: any, self: any) {
+        return self.renderToken(tokens, idx, options);
+    };
+    md.renderer.rules.link_open = function (tokens: any, idx: any, options: any, env: any, self: any) {
+        const token = tokens[idx];
+        const hrefIndex = token.attrIndex('href');
+        
+        if (hrefIndex >= 0) {
+            const href = token.attrs![hrefIndex][1];
+            // Only add _blank for non-internal links (not anchors)
+            if (!href.startsWith('#')) {
+                const targetIndex = token.attrIndex('target');
+                if (targetIndex < 0) {
+                    token.attrPush(['target', '_blank']);
+                } else {
+                    token.attrs![targetIndex][1] = '_blank';
+                }
+            }
+        }
+        return defaultLinkRender(tokens, idx, options, env, self);
+    };
 
     // Custom fence rendering for mermaid blocks
     const defaultFenceRender = md.renderer.rules.fence || function (tokens: any, idx: any, options: any, env: any, self: any) {
@@ -342,7 +369,17 @@ export async function exportAsPdf(documentUri: vscode.Uri): Promise<void> {
                 // Clean up temp file
                 try { fs.unlinkSync(tmpHtml); } catch (_) { }
 
-                vscode.window.showInformationMessage(`PDF exported successfully: ${path.basename(saveUri.fsPath)}`);
+                const selection = await vscode.window.showInformationMessage(
+                    `PDF exported successfully: ${path.basename(saveUri.fsPath)}`,
+                    'Open PDF',
+                    'Reveal in Explorer'
+                );
+
+                if (selection === 'Open PDF') {
+                    vscode.env.openExternal(saveUri);
+                } else if (selection === 'Reveal in Explorer') {
+                    vscode.commands.executeCommand('revealFileInOS', saveUri);
+                }
             } catch (err: any) {
                 vscode.window.showErrorMessage(`PDF export failed: ${err.message || err}`);
             }

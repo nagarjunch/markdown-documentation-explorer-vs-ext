@@ -29,7 +29,8 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return;
 
-        const mkdocsFiles = await vscode.workspace.findFiles('**/mkdocs.yml', '**/node_modules/**');
+        // Search for both mkdocs.yml and mkdocs.yaml
+        const mkdocsFiles = await vscode.workspace.findFiles('**/{mkdocs.yml,mkdocs.yaml}', '**/node_modules/**');
         const newTree: MkDocsNode[] = [];
 
         for (const file of mkdocsFiles) {
@@ -37,17 +38,28 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
                 const fileContents = fs.readFileSync(file.fsPath, 'utf8');
                 const data = yaml.load(fileContents) as any;
 
-                if (data && data.nav) {
+                if (data) {
                     const workspaceRoot = path.dirname(file.fsPath);
                     const docsDir = path.join(workspaceRoot, data.docs_dir || 'docs');
                     const siteName = data.site_name || path.basename(workspaceRoot);
 
-                    const siteNode: MkDocsNode = {
-                        label: siteName,
-                        type: 'folder',
-                        children: this.parseNav(data.nav, docsDir)
-                    };
-                    newTree.push(siteNode);
+                    let children: MkDocsNode[];
+                    if (data.nav) {
+                        // Explicit nav defined — parse it
+                        children = this.parseNav(data.nav, docsDir);
+                    } else {
+                        // No nav key — auto-discover from docs directory
+                        children = this.scanDocsDir(docsDir);
+                    }
+
+                    if (children.length > 0) {
+                        const siteNode: MkDocsNode = {
+                            label: siteName,
+                            type: 'folder',
+                            children
+                        };
+                        newTree.push(siteNode);
+                    }
                 }
             } catch (e) {
                 console.error(`Failed to parse ${file.fsPath}`, e);
@@ -99,6 +111,64 @@ export class MkDocsTreeProvider implements vscode.TreeDataProvider<MkDocsNode> {
                 type: 'file',
                 uri: fileUri
             });
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Scans the docs directory to auto-generate navigation when no `nav` key
+     * is defined in mkdocs.yml (mirrors MkDocs' default auto-nav behavior).
+     */
+    private scanDocsDir(docsDir: string): MkDocsNode[] {
+        if (!fs.existsSync(docsDir)) {
+            return [];
+        }
+
+        const nodes: MkDocsNode[] = [];
+
+        let entries: fs.Dirent[];
+        try {
+            entries = fs.readdirSync(docsDir, { withFileTypes: true });
+        } catch {
+            return [];
+        }
+
+        // Sort: folders first, then files, both alphabetically
+        entries.sort((a, b) => {
+            if (a.isDirectory() && !b.isDirectory()) return -1;
+            if (!a.isDirectory() && b.isDirectory()) return 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        for (const entry of entries) {
+            const fullPath = path.join(docsDir, entry.name);
+
+            if (entry.isDirectory()) {
+                // Skip hidden directories
+                if (entry.name.startsWith('.')) continue;
+
+                const children = this.scanDocsDir(fullPath);
+                if (children.length > 0) {
+                    nodes.push({
+                        label: entry.name,
+                        type: 'folder',
+                        children
+                    });
+                }
+            } else if (entry.isFile() && /\.(md|mdx|markdown)$/i.test(entry.name)) {
+                const fileUri = vscode.Uri.file(fullPath);
+                // Use filename without extension as label, prettify index files
+                let label = path.basename(entry.name, path.extname(entry.name));
+                if (label.toLowerCase() === 'index') {
+                    label = 'Home';
+                }
+                nodes.push({
+                    label,
+                    type: 'file',
+                    uri: fileUri
+                });
+            }
         }
 
         return nodes;

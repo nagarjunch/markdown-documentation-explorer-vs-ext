@@ -2,7 +2,7 @@
   "name": "markdown-documentation-explorer",
   "displayName": "Markdown Documentation Explorer",
   "description": "Automatically discover, organize, render, and search all markdown documentation in a repository.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "icon": "resources/icon.png",
   "publisher": "nagarjunch",
   "repository": {

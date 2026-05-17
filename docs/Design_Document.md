@@ -1,5 +1,24 @@
 # Design Document: Markdown Documentation Explorer (VSCode Extension)
 
+## Table of Contents
+- [1. Introduction](#1-introduction)
+  - [1.1 Purpose](#11-purpose)
+  - [1.2 Scope](#12-scope)
+- [2.1 Core Components](#21-core-components)
+- [3. Data Models](#3-data-models)
+  - [3.1 DocumentNode](#31-documentnode)
+  - [3.2 DocumentMetadata](#32-documentmetadata)
+  - [3.3 MkDocsConfig](#33-mkdocsconfig)
+- [4. Component Details & Implementation Strategy](#4-component-details--implementation-strategy)
+  - [4.1 Workspace Discovery & Indexer](#41-workspace-discovery--indexer)
+  - [4.2 Sidebar & Tree Views](#42-sidebar--tree-views)
+  - [4.3 Markdown Rendering Engine (Webview)](#43-markdown-rendering-engine-webview)
+  - [4.4 Global Search](#44-global-search)
+- [5. Third-Party Libraries Stack](#5-third-party-libraries-stack)
+- [6. Performance & Security Considerations](#6-performance--security-considerations)
+- [7. Configuration Settings Schema (package.json)](#7-configuration-settings-schema-packagejson)
+- [8. Development Phases](#8-development-phases)
+
 ## 1. Introduction
 
 ### 1.1 Purpose

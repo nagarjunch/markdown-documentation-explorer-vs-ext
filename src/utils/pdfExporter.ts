@@ -81,7 +81,13 @@ function buildHtmlForPdf(markdownContent: string, title: string, baseDirPath: st
         .use(markdownItAdmonition)
         .use(markdownItFootnote)
         .use(markdownItAnchor, {
-            tabIndex: false
+            tabIndex: false,
+            slugify: (s: string) => s
+                .trim()
+                .toLowerCase()
+                .replace(/<[^>]*>/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s/g, '-')
         });
 
     // Custom link handling: force external hyperlinks to open in new tab

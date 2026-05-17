@@ -83,7 +83,13 @@ export class MarkdownPreviewPanel {
             .use(markdownItAdmonition)
             .use(markdownItFootnote)
             .use(markdownItAnchor, {
-                tabIndex: false
+                tabIndex: false,
+                slugify: (s: string) => s
+                    .trim()
+                    .toLowerCase()
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s/g, '-')
             });
 
         // Custom fence rendering for mermaid
@@ -336,7 +342,15 @@ export class MarkdownPreviewPanel {
                                     return;
                                 }
                                 if (href.startsWith('#')) {
-                                    return; // Internal page anchor
+                                    // Manually handle anchor navigation since VS Code webview
+                                    // doesn't support default anchor behavior
+                                    event.preventDefault();
+                                    const targetId = decodeURIComponent(href.substring(1));
+                                    const targetEl = document.getElementById(targetId);
+                                    if (targetEl) {
+                                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                    return;
                                 }
                                 // It's a local file link
                                 event.preventDefault();
